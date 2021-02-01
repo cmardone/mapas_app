@@ -18,6 +18,16 @@ class MapBloc extends Bloc<MapEvent, MapState> {
   Stream<MapState> mapEventToState(MapEvent event) async* {
     if (event is OnMapReady) {
       yield state.copyWith(isReady: true);
+    } else if (event is OnLocationUpdate) {
+      final polylines = state?.polylines ?? Map<String, Polyline>();
+      if (!polylines.containsKey('my_track'))
+        polylines['my_track'] = Polyline(
+          polylineId: PolylineId(event.location.toString()),
+          points: [],
+        );
+      polylines['my_track'].points.add(event.location);
+      print(event.location);
+      state.copyWith(polylines: polylines);
     }
   }
 
@@ -25,12 +35,11 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     if (!state.isReady) {
       _controller = controller;
       _controller.setMapStyle(mapStyle);
-      // TODO: Cambiar estilo del mapa
       add(OnMapReady());
     }
   }
 
   Future moveCamera(LatLng location) async {
-    _controller?.animateCamera(CameraUpdate.newLatLng(location));
+    await _controller?.animateCamera(CameraUpdate.newLatLng(location));
   }
 }
