@@ -43,12 +43,14 @@ class _MapPageState extends State<MapPage> {
     if (!state.hasLocation) return Center(child: Text('Locating...'));
     // Register location
     context.read<MapBloc>().add(OnLocationUpdate(state.location));
+    print(state.location);
     return GoogleMap(
       initialCameraPosition: CameraPosition(target: state.location, zoom: 14),
       myLocationEnabled: true,
       myLocationButtonEnabled: false,
       zoomControlsEnabled: false,
       onMapCreated: context.read<MapBloc>().initMap,
+      polylines: context.read<MapBloc>().state.polylines.values.toSet(),
     );
   }
 }

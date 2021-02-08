@@ -14,20 +14,34 @@ class MapBloc extends Bloc<MapEvent, MapState> {
 
   GoogleMapController _controller;
 
+  Polyline _myRoute = Polyline(
+    polylineId: PolylineId('my_route'),
+    width: 3,
+  );
+
   @override
   Stream<MapState> mapEventToState(MapEvent event) async* {
     if (event is OnMapReady) {
       yield state.copyWith(isReady: true);
     } else if (event is OnLocationUpdate) {
-      final polylines = state?.polylines ?? Map<String, Polyline>();
-      if (!polylines.containsKey('my_track'))
-        polylines['my_track'] = Polyline(
-          polylineId: PolylineId(event.location.toString()),
-          points: [],
-        );
-      polylines['my_track'].points.add(event.location);
-      print(event.location);
-      state.copyWith(polylines: polylines);
+      final points = [
+        ..._myRoute.points,
+        event.location,
+      ];
+      _myRoute = _myRoute.copyWith(pointsParam: points);
+      final polylines = state.polylines;
+      polylines['my_route'] = _myRoute;
+      yield state.copyWith(polylines: polylines);
+
+      // final polylines = state?.polylines ?? Map<String, Polyline>();
+      // if (!polylines.containsKey('my_track'))
+      //   polylines['my_track'] = Polyline(
+      //     polylineId: PolylineId(event.location.toString()),
+      //     points: [],
+      //   );
+      // polylines['my_track'].points.add(event.location);
+      // print(event.location);
+      // state.copyWith(polylines: polylines);
     }
   }
 
